@@ -9,5 +9,9 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.zerry.caffe_android_app.CategoriesActivity">
 
+    <com.baoyz.swipemenulistview.SwipeMenuListView
+        android:id="@+id/listView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </RelativeLayout>
