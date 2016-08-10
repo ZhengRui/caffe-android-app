@@ -31,12 +31,12 @@ public class TaskSpec implements Serializable {
             new SingleTask("Object Recognition",
                     "bvlc/deploy.prototxt",
                     "bvlc/mdl.caffemodel",
-                    "fc7", "", ""),
+                    "fc7", "", "objectRec.db"),
 
             new SingleTask("Face Recognition",
                     "mfm/LightenedCNN_B_deploy.prototxt",
                     "mfm/LightenedCNN_B.caffemodel",
-                    "eltwise_fc1", "", "")
+                    "eltwise_fc1", "", "faceRec.db")
 
     };
 

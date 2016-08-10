@@ -5,14 +5,13 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.os.Handler;
+import android.os.Environment;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.baoyz.swipemenulistview.BaseSwipListAdapter;
 import com.baoyz.swipemenulistview.SwipeMenu;
@@ -20,6 +19,11 @@ import com.baoyz.swipemenulistview.SwipeMenuCreator;
 import com.baoyz.swipemenulistview.SwipeMenuItem;
 import com.baoyz.swipemenulistview.SwipeMenuListView;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,10 +33,11 @@ import java.util.List;
 public class CategoriesActivity extends Activity {
     private static final String TAG = "CategoriesActivity";
     private TaskSpec.SingleTask task;
-    private List<ObjectItem> mItemList;
+    private List<ObjectItem> mItemList = new ArrayList<>();
     private CategoryAdapter mAdapter;
     private SwipeMenuListView mListView;
     private SwipeMenuCreator creator;
+    private String pthPrefix = Environment.getExternalStorageDirectory().toString() + File.separator + "caffe-android-app";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,9 +46,10 @@ public class CategoriesActivity extends Activity {
 
 
         task = (TaskSpec.SingleTask) getIntent().getExtras().getSerializable("task");
+        task.taskDBPth = pthPrefix + File.separator + task.taskDBPth;
         Log.i(TAG, "entering " + task.taskName + " task");
 
-        displayCategories(task);
+        displayCategories();
 
     }
 
@@ -52,11 +58,38 @@ public class CategoriesActivity extends Activity {
                 Resources.getSystem().getDisplayMetrics());
     }
 
-    void displayCategories(TaskSpec.SingleTask task) {
-        mItemList = new ArrayList<>();
-        mItemList.add(new ObjectItem("1"));
-        mItemList.add(new ObjectItem("2"));
 
+    private List<ObjectItem> loadItems() {
+        List<ObjectItem> res = new ArrayList<>();
+        File ifile = new File(task.taskDBPth);
+        try {
+            FileInputStream fis = new FileInputStream(ifile);
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            res = (ArrayList<ObjectItem>) ois.readObject();
+            ois.close();
+            fis.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return res;
+    };
+
+    private void writeItems() {
+        File ofile = new File(task.taskDBPth);
+        try {
+            FileOutputStream fos = new FileOutputStream(ofile);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(mItemList);
+            Log.i(TAG, "finished saving database to " + ofile.getAbsolutePath());
+            oos.close();
+            fos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    void displayCategories() {
+        mItemList = loadItems();
         mListView = (SwipeMenuListView) findViewById(R.id.listView);
         mAdapter = new CategoryAdapter();
         mListView.setAdapter(mAdapter);
@@ -96,6 +129,9 @@ public class CategoriesActivity extends Activity {
         };
 
         mListView.setMenuCreator(creator);
+
+
+
     }
 
 
@@ -116,18 +152,18 @@ public class CategoriesActivity extends Activity {
             return position;
         }
 
-        private void showToast(String text, int milliseconds) {
-            final Toast toast = Toast.makeText(CategoriesActivity.this, text, Toast.LENGTH_SHORT);
-            toast.show();
-
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    toast.cancel();
-                }
-            }, milliseconds);
-        }
+//        private void showToast(String text, int milliseconds) {
+//            final Toast toast = Toast.makeText(CategoriesActivity.this, text, Toast.LENGTH_SHORT);
+//            toast.show();
+//
+//            Handler handler = new Handler();
+//            handler.postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    toast.cancel();
+//                }
+//            }, milliseconds);
+//        }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
@@ -144,18 +180,20 @@ public class CategoriesActivity extends Activity {
                 holder.iv_icon.setImageDrawable(null);
 
             holder.tv_name.setText(item.itemName);
-            holder.iv_icon.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showToast("iv_icon_click", 500);
-                }
-            });
-            holder.tv_name.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showToast("tv_name_click", 500);
-                }
-            });
+
+//            holder.iv_icon.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    showToast("iv_icon_click", 500);
+//                }
+//            });
+//            holder.tv_name.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    showToast("tv_name_click", 500);
+//                }
+//            });
+
             return convertView;
         }
 
