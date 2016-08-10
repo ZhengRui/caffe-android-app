@@ -27,7 +27,7 @@ import java.util.List;
  */
 public class CategoriesActivity extends Activity {
     private static final String TAG = "CategoriesActivity";
-    private String task;
+    private TaskSpec.SingleTask task;
     private List<ApplicationInfo> mAppList;
     private AppAdapter mAdapter;
     private SwipeMenuListView mListView;
@@ -39,9 +39,8 @@ public class CategoriesActivity extends Activity {
         setContentView(R.layout.activity_categories);
 
 
-        Bundle extras = getIntent().getExtras();
-        task = extras.getString("TASK");
-        Log.i(TAG, task);
+        task = (TaskSpec.SingleTask) getIntent().getExtras().getSerializable("task");
+        Log.i(TAG, task.taskName);
 
         displayCategories(task);
 
@@ -52,7 +51,7 @@ public class CategoriesActivity extends Activity {
                 Resources.getSystem().getDisplayMetrics());
     }
 
-    void displayCategories(String task) {
+    void displayCategories(TaskSpec.SingleTask task) {
         mAppList = getPackageManager().getInstalledApplications(0);
         mListView = (SwipeMenuListView) findViewById(R.id.listView);
         mAdapter = new AppAdapter();
