@@ -8,11 +8,12 @@ import java.util.List;
  */
 public class ObjectItem {
     public String thumbnailPth;
+    public String itemName;
     public int featureLength;
     public int featureNum;
     public List<float[]> features = new ArrayList<>();
 
-    public ObjectItem(String pth) {
-        this.thumbnailPth = pth;
+    public ObjectItem(String name) {
+        this.itemName = name;
     }
 }

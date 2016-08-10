@@ -1,11 +1,11 @@
 package com.zerry.caffe_android_app;
 
 import android.app.Activity;
-import android.content.pm.ApplicationInfo;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
@@ -20,6 +20,7 @@ import com.baoyz.swipemenulistview.SwipeMenuCreator;
 import com.baoyz.swipemenulistview.SwipeMenuItem;
 import com.baoyz.swipemenulistview.SwipeMenuListView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,8 +29,8 @@ import java.util.List;
 public class CategoriesActivity extends Activity {
     private static final String TAG = "CategoriesActivity";
     private TaskSpec.SingleTask task;
-    private List<ApplicationInfo> mAppList;
-    private AppAdapter mAdapter;
+    private List<ObjectItem> mItemList;
+    private CategoryAdapter mAdapter;
     private SwipeMenuListView mListView;
     private SwipeMenuCreator creator;
 
@@ -40,7 +41,7 @@ public class CategoriesActivity extends Activity {
 
 
         task = (TaskSpec.SingleTask) getIntent().getExtras().getSerializable("task");
-        Log.i(TAG, task.taskName);
+        Log.i(TAG, "entering " + task.taskName + " task");
 
         displayCategories(task);
 
@@ -52,9 +53,12 @@ public class CategoriesActivity extends Activity {
     }
 
     void displayCategories(TaskSpec.SingleTask task) {
-        mAppList = getPackageManager().getInstalledApplications(0);
+        mItemList = new ArrayList<>();
+        mItemList.add(new ObjectItem("1"));
+        mItemList.add(new ObjectItem("2"));
+
         mListView = (SwipeMenuListView) findViewById(R.id.listView);
-        mAdapter = new AppAdapter();
+        mAdapter = new CategoryAdapter();
         mListView.setAdapter(mAdapter);
 
         creator = new SwipeMenuCreator() {
@@ -95,21 +99,34 @@ public class CategoriesActivity extends Activity {
     }
 
 
-    class AppAdapter extends BaseSwipListAdapter {
+    class CategoryAdapter extends BaseSwipListAdapter {
 
         @Override
         public int getCount() {
-            return mAppList.size();
+            return mItemList.size();
         }
 
         @Override
-        public ApplicationInfo getItem(int position) {
-            return mAppList.get(position);
+        public ObjectItem getItem(int position) {
+            return mItemList.get(position);
         }
 
         @Override
         public long getItemId(int position) {
             return position;
+        }
+
+        private void showToast(String text, int milliseconds) {
+            final Toast toast = Toast.makeText(CategoriesActivity.this, text, Toast.LENGTH_SHORT);
+            toast.show();
+
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    toast.cancel();
+                }
+            }, milliseconds);
         }
 
         @Override
@@ -120,19 +137,23 @@ public class CategoriesActivity extends Activity {
                 new ViewHolder(convertView);
             }
             ViewHolder holder = (ViewHolder) convertView.getTag();
-            ApplicationInfo item = getItem(position);
-            holder.iv_icon.setImageDrawable(item.loadIcon(getPackageManager()));
-            holder.tv_name.setText(item.loadLabel(getPackageManager()));
+            ObjectItem item = getItem(position);
+            if (item.thumbnailPth == null)
+                holder.iv_icon.setImageResource(getResources().getIdentifier("@mipmap/ic_unknown", null, getPackageName()));
+            else
+                holder.iv_icon.setImageDrawable(null);
+
+            holder.tv_name.setText(item.itemName);
             holder.iv_icon.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(CategoriesActivity.this, "iv_icon_click", Toast.LENGTH_SHORT).show();
+                    showToast("iv_icon_click", 500);
                 }
             });
             holder.tv_name.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(CategoriesActivity.this,"iv_icon_click",Toast.LENGTH_SHORT).show();
+                    showToast("tv_name_click", 500);
                 }
             });
             return convertView;
