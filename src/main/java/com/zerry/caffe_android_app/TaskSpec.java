@@ -5,6 +5,7 @@ import java.io.Serializable;
 /**
  * Created by zerry on 16/8/9.
  */
+
 public class TaskSpec implements Serializable {
 
     class SingleTask implements Serializable {
