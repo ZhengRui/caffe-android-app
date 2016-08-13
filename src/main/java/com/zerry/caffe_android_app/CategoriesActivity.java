@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
@@ -33,7 +34,9 @@ import java.util.List;
 public class CategoriesActivity extends Activity {
     private static final String TAG = "CategoriesActivity";
     private TaskSpec.SingleTask task;
-    private List<ObjectItem> mItemList = new ArrayList<>();
+    private List<ObjectItem.ItemBrief> mItemListBrief = new ArrayList<>();
+    private List<ObjectItem.ItemFeat> mItemListFeat = new ArrayList<>();
+    private boolean isNew;
     private CategoryAdapter mAdapter;
     private SwipeMenuListView mListView;
     private SwipeMenuCreator creator;
@@ -46,10 +49,21 @@ public class CategoriesActivity extends Activity {
 
 
         task = (TaskSpec.SingleTask) getIntent().getExtras().getSerializable("task");
-        task.taskDBPth = pthPrefix + File.separator + task.taskDBPth;
+        task.taskDBPre = pthPrefix + File.separator + task.taskDBPre;
         Log.i(TAG, "entering " + task.taskName + " task");
 
+        isNew = false;
         displayCategories();
+
+        FloatingActionButton newObjItemBtn = (FloatingActionButton) findViewById(R.id.newObjItemBtn);
+        newObjItemBtn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                ObjectItem newItem = new ObjectItem("Unknown");
+                mItemListBrief.add(newItem.itemBrief);
+                mAdapter.notifyDataSetChanged();
+            }
+        });
 
     }
 
@@ -59,37 +73,57 @@ public class CategoriesActivity extends Activity {
     }
 
 
-    private List<ObjectItem> loadItems() {
-        List<ObjectItem> res = new ArrayList<>();
-        File ifile = new File(task.taskDBPth);
-        try {
-            FileInputStream fis = new FileInputStream(ifile);
-            ObjectInputStream ois = new ObjectInputStream(fis);
-            res = (ArrayList<ObjectItem>) ois.readObject();
-            ois.close();
-            fis.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+    private List<ObjectItem.ItemBrief> loadItems() {
+        List<ObjectItem.ItemBrief> res = new ArrayList<>();
+        File ifile = new File(task.taskDBPre + ".brief");
+        if (ifile.exists()) {
+            try {
+                FileInputStream fis = new FileInputStream(ifile);
+                ObjectInputStream ois = new ObjectInputStream(fis);
+                res = (ArrayList<ObjectItem.ItemBrief>) ois.readObject();
+                ois.close();
+                fis.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         return res;
     };
 
     private void writeItems() {
-        File ofile = new File(task.taskDBPth);
-        try {
-            FileOutputStream fos = new FileOutputStream(ofile);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(mItemList);
-            Log.i(TAG, "finished saving database to " + ofile.getAbsolutePath());
-            oos.close();
-            fos.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (isNew) {
+            // need further check of consistency
+
+            File ofileBrief = new File(task.taskDBPre + ".brief");
+            try {
+                FileOutputStream fosBrief = new FileOutputStream(ofileBrief);
+                ObjectOutputStream oosBrief = new ObjectOutputStream(fosBrief);
+                oosBrief.writeObject(mItemListBrief);
+                Log.i(TAG, "finished saving database to " + ofileBrief.getAbsolutePath());
+                oosBrief.close();
+                fosBrief.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            File ofileFeat = new File(task.taskDBPre + ".feat");
+            try {
+                FileOutputStream fosFeat = new FileOutputStream(ofileFeat);
+                ObjectOutputStream oosFeat = new ObjectOutputStream(fosFeat);
+                oosFeat.writeObject(mItemListFeat);
+                Log.i(TAG, "finished saving database to " + ofileFeat.getAbsolutePath());
+                oosFeat.close();
+                fosFeat.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            isNew = false;
         }
     }
 
     void displayCategories() {
-        mItemList = loadItems();
+        mItemListBrief = loadItems();
         mListView = (SwipeMenuListView) findViewById(R.id.listView);
         mAdapter = new CategoryAdapter();
         mListView.setAdapter(mAdapter);
@@ -139,12 +173,12 @@ public class CategoriesActivity extends Activity {
 
         @Override
         public int getCount() {
-            return mItemList.size();
+            return mItemListBrief.size();
         }
 
         @Override
-        public ObjectItem getItem(int position) {
-            return mItemList.get(position);
+        public ObjectItem.ItemBrief getItem(int position) {
+            return mItemListBrief.get(position);
         }
 
         @Override
@@ -173,13 +207,13 @@ public class CategoriesActivity extends Activity {
                 new ViewHolder(convertView);
             }
             ViewHolder holder = (ViewHolder) convertView.getTag();
-            ObjectItem item = getItem(position);
-            if (item.thumbnailPth == null)
+            ObjectItem.ItemBrief itemBrief = getItem(position);
+            if (itemBrief.thumbnailPth == null)
                 holder.iv_icon.setImageResource(getResources().getIdentifier("@mipmap/ic_unknown", null, getPackageName()));
             else
                 holder.iv_icon.setImageDrawable(null);
 
-            holder.tv_name.setText(item.itemName);
+            holder.tv_name.setText(itemBrief.itemName);
 
 //            holder.iv_icon.setOnClickListener(new View.OnClickListener() {
 //                @Override

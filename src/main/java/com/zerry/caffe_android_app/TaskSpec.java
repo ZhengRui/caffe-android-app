@@ -14,7 +14,7 @@ public class TaskSpec implements Serializable {
         public String caffeMdlPth;
         public String caffeFeatLayer;
         public String svmMdlPth;
-        public String taskDBPth;
+        public String taskDBPre;
 
         public SingleTask(String taskName, String protoPth,
                           String caffeMdlPth, String caffeFeatLayer,
@@ -24,7 +24,7 @@ public class TaskSpec implements Serializable {
             this.caffeMdlPth = caffeMdlPth;
             this.caffeFeatLayer = caffeFeatLayer;
             this.svmMdlPth = svmMdlPth;
-            this.taskDBPth = taskDBPth;
+            this.taskDBPre = taskDBPth;
         }
     }
 
@@ -32,12 +32,12 @@ public class TaskSpec implements Serializable {
             new SingleTask("Object Recognition",
                     "bvlc/deploy.prototxt",
                     "bvlc/mdl.caffemodel",
-                    "fc7", "", "objectRec.db"),
+                    "fc7", "", "objectRec"),
 
             new SingleTask("Face Recognition",
                     "mfm/LightenedCNN_B_deploy.prototxt",
                     "mfm/LightenedCNN_B.caffemodel",
-                    "eltwise_fc1", "", "faceRec.db")
+                    "eltwise_fc1", "", "faceRec")
 
     };
 
